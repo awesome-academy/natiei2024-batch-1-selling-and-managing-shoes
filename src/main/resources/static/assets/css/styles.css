@@ -5,6 +5,15 @@ a:hover {
     text-decoration: none !important;
 }
 
+input, button {
+    border-radius: 0 !important;
+}
+
+.btn:focus {
+    border-color: none !important;
+    box-shadow: none !important;
+}
+
 .hr-dashed {
     border-top: 1px dashed #000;
 }
