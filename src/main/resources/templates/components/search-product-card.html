@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+  <div th:fragment="product-card(name, image1, image2, style, price, discount, soldOut, url)" class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item" th:classappend="${soldOut ? 'sold-out' : ''}">
+    <div class="thumbnail">
+      <div class="cont-item">
+        <div class="soldout-text" th:if="${soldOut}">HẾT HÀNG</div>
+        <div class="black-rect" th:if="${soldOut}"></div>
+        <img class="inormal" th:src="@{${image1}}" />
+        <img class="ihover" th:src="@{${image2}}" />
+      </div>
+      <div class="button">
+        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" th:href="@{${url}}">MUA NGAY</a>
+        <a class="btn btn-prd1-heart addToWishList"></a>
+      </div>
+      <div class="caption">
+        <h3 class="name"><a th:href="@{${url}}" th:text="${name}"></a></h3>
+        <h3 class="color" th:text="${style}"></h3>
+        <h3 class="price">
+    <span th:if="${discount > 0}" class="price-discounted" th:text="${price - price * discount / 100}">
+        <!-- Display the discounted price if available -->
+    </span>
+          <span class="price-real" th:text="${price}">
+        <!-- Display the real price -->
+    </span>
+        </h3>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

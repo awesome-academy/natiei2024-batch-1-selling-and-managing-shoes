@@ -12,8 +12,10 @@ import org.hibernate.annotations.Type;
 import group1.intern.model.Embeddables.ProductDescription;
 import group1.intern.model.Enum.ProductGender;
 
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Entity
 @Getter
@@ -22,11 +24,19 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "products")
-public class Product extends EntityBase{
+@NamedEntityGraph(
+    name = "Product.styleAndDetails",
+    attributeNodes = {
+        @NamedAttributeNode("style"),
+        @NamedAttributeNode("productDetails")
+    }
+)
+public class Product extends EntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private int originPrice;
+    @Column(columnDefinition = "integer default 0")
     private Integer discount;
     private String name;
     @Enumerated(EnumType.STRING)
@@ -51,6 +61,27 @@ public class Product extends EntityBase{
     @JoinColumn(name = "material_id")
     private Constant material;
 
-    @OneToMany(mappedBy = "product",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product")
     private List<ProductDetail> productDetails;
+
+    public String getOriginPriceFormated() {
+        NumberFormat formatter = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
+        return formatter.format(this.originPrice) + " VND";
+    }
+
+    public String getDiscountPriceFormated() {
+        if (discount == null || discount <= 0) return "";
+        int discountedPrice = originPrice - (originPrice * discount / 100);
+        NumberFormat numberFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
+        return numberFormat.format(discountedPrice) + " VND";
+    }
+
+    public boolean isSoldOut() {
+        return productDetails.stream()
+            .allMatch(detail -> detail.getQuantity() <= 0);
+    }
+
+    public String getProductDetailUrl() {
+        return "/product-detail/" + this.id;
+    }
 }

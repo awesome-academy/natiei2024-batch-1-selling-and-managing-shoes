@@ -1,0 +1,247 @@
+<html xmlns:th="http://www.thymeleaf.org" lang="en" th:replace="~{./layouts/main-layout :: main-layout-fragment(
+        ~{::title},
+        ~{::#static-resources},
+        ~{./components/header :: header},
+        ~{::#main-content}
+    )}">
+
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document</title>
+  <th:block id="static-resources">
+    <link rel="stylesheet" href="/assets/css/search-product.css"/>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // TODO: add API to get wish list (if database have) :)
+        var buttons = document.querySelectorAll(".addToWishList");
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            if (button.classList.contains("btn-prd1-heart-active")) {
+              button.classList.remove("btn-prd1-heart-active");
+              button.classList.add("btn-prd1-heart");
+            } else if (button.classList.contains("btn-prd1-heart")) {
+              button.classList.remove("btn-prd1-heart");
+              button.classList.add("btn-prd1-heart-active");
+            }
+          });
+        });
+
+        var noProductBtn = document.querySelector(".no-product-btn .btn");
+        if (noProductBtn) {
+          noProductBtn.addEventListener("click", function () {
+            window.location.href = '/product-list';
+          });
+        }
+      });
+    </script>
+  </th:block>
+</head>
+
+<body>
+<div id="main-content" class="prd1-cont container-fluid">
+  <div class="row">
+    <!--  add class sold out if left-over = 0-->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 prd-search">
+      <div class="row center search-string">
+        <h1>Tìm thấy <span th:text="${result_count}"></span> kết quả cho "<span class="query-string"
+                                                                                th:text="${query}"></span>"</h1>
+      </div>
+      <div class="row divider-2"></div>
+      <div class="row prd1-right-items">
+        <div th:if="${#lists.isEmpty(products)}" class="center no-product">
+          <p>Không có sản phẩm nào được tìm thấy.</p>
+
+        </div>
+
+        <div class="no-product-btn center">
+          <button  th:if="${#lists.isEmpty(products)}" class="btn btn-lg orange-button text-uppercase">xem tất cả sản phẩm</button>
+        </div>
+
+
+
+        <div th:each="productCard : ${products}" class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item"
+             th:classappend="${productCard.isSoldOut() ? 'sold-out' : ''}">
+          <div class="thumbnail">
+            <div class="cont-item">
+              <div class="soldout-text" th:if="${productCard.isSoldOut()}">HẾT HÀNG</div>
+              <div class="black-rect" th:if="${productCard.isSoldOut()}"></div>
+              <img class="inormal" th:src="@{${productCard.images.get(0).getUrl()}}"/>
+              <img class="ihover" th:src="@{${productCard.images.get(1).getUrl()}}"/>
+            </div>
+            <div class="button">
+              <a class="btn btn-prd1-buynow hidden-xs hidden-sm" th:href="@{${productCard.getProductDetailUrl()}}">MUA NGAY</a>
+              <a class="btn btn-prd1-heart addToWishList"></a>
+            </div>
+            <div class="caption">
+              <h3 class="name">
+                <a th:href="@{${'/product-detail/' + productCard.id}}"
+                   th:text="${productCard.name + ' - ' + productCard.style.getValue()}"></a>
+              </h3>
+              <h3 class="color" th:text="${productCard.category.getValue()}"></h3>
+              <h3 class="price">
+                <span  th:if="${productCard.discount == null || productCard.discount == 0}" th:text="${productCard.getOriginPriceFormated()}"></span>
+                <span  th:if="${productCard.discount != null}" th:text="${productCard.getDiscountPriceFormated()}"></span>
+                <span class="price-real" th:if="${productCard.discount != null && productCard.discount > 0}" th:text="${productCard.getOriginPriceFormated()}"></span>
+              </h3>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row center">
+    <nav aria-label="Page navigation" class="pagination-bottom">
+      <ul>
+        <li th:if="${paginationHelper.prevPageUrl}">
+          <a th:href="@{${paginationHelper.prevPageUrl}}">&lt;</a>
+        </li>
+        <li th:each="pageNumber : ${paginationHelper.pageNumbers}"
+            th:classappend="${pageNumber == page} ? 'active' : ''">
+          <a th:href="@{${paginationHelper.getPageUrl(pageNumber)}}"
+             th:text="${pageNumber}">1</a>
+        </li>
+        <li th:if="${paginationHelper.nextPageUrl}">
+          <a th:href="@{${paginationHelper.nextPageUrl}}">&gt;</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+</body>
+
+</html>
+
+<!-- Render each product card here -->
+<!--      <div class="row prd1-right-items">-->
+
+<!--        <div th:replace="~{components/search-product-card :: product-card(-->
+<!--          id='1',-->
+<!--          name='Sold Out Product',-->
+<!--          image1='https://via.placeholder.com/150',-->
+<!--          image2='https://via.placeholder.com/150',-->
+<!--          style='Style A',-->
+<!--          price='100.00 USD',-->
+<!--          soldOut=true,-->
+<!--          url='https://example.com/product/1'-->
+<!--      )}"></div>-->
+
+<!--        &lt;!&ndash; Product card without 'sold out' &ndash;&gt;-->
+<!--        <div th:replace="~{components/search-product-card :: product-card(-->
+<!--          id='2',-->
+<!--          name='Available Product',-->
+<!--          image1='https://via.placeholder.com/150',-->
+<!--          image2='https://via.placeholder.com/150',-->
+<!--          style='Style B',-->
+<!--          price='150.00 USD',-->
+<!--          soldOut=false,-->
+<!--          url='https://example.com/product/2'-->
+<!--      )}"></div>-->
+<!--                  <div class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item sold-out">-->
+<!--                    <div class="thumbnail">-->
+<!--                      <div class="cont-item">-->
+<!--                        <div class="soldout-text">HẾT HÀNG</div>-->
+<!--                        <div class="black-rect"></div>-->
+<!--                        <img class="inormal" src="https://ananas.vn/wp-content/uploads/Pro_ALP2023_1-500x500.jpg">-->
+<!--                        <img class="ihover" src="https://ananas.vn/wp-content/uploads/Pro_ALP2023_7-500x500.jpg">-->
+<!--                      </div>-->
+
+<!--                      <div class="button">-->
+<!--                        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" href="https://ananas.vn/product-detail/aet00002/">MUA-->
+<!--                          NGAY</a>-->
+<!--                        <a class="btn btn-prd1-heart addToWishList" href="javascript:void(0)" data-liked="false"-->
+<!--                           data-action="transferCartToWishList" data-idproduct="994533" data-isproductlistpage="1"></a>-->
+<!--                      </div>-->
+<!--                      <div class="caption">-->
+<!--                        <h3 class="name"><a href="https://ananas.vn/product-detail/aet00002/">Pigment Tee - Nice Nature Club</a>-->
+<!--                        </h3>-->
+<!--                        <h3 class="color">Greener Pastures</h3>-->
+<!--                        <h3 class="price">390.000 VND</h3>-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                  <div class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item sold-out">-->
+<!--                    <div class="thumbnail">-->
+<!--                      <div class="cont-item">-->
+<!--                        <div class="soldout-text">HẾT HÀNG</div>-->
+<!--                        <div class="black-rect"></div>-->
+<!--                        <img class="inormal" src="https://ananas.vn/wp-content/uploads/Pro_AHCS012_1-500x500.jpg">-->
+<!--                        <img class="ihover" src="https://ananas.vn/wp-content/uploads/Pro_AHCS012_2-500x500.jpg">-->
+<!--                      </div>-->
+
+<!--                      <div class="button">-->
+<!--                        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" href="https://ananas.vn/product-detail/aet00002/">MUA-->
+<!--                          NGAY</a>-->
+<!--                        <a class="btn btn-prd1-heart addToWishList" href="javascript:void(0)" data-liked="false"-->
+<!--                           data-action="transferCartToWishList" data-idproduct="994533" data-isproductlistpage="1"></a>-->
+<!--                      </div>-->
+<!--                      <div class="caption">-->
+<!--                        <h3 class="name"><a href="https://ananas.vn/product-detail/aet00002/">Pigment Tee - Nice Nature Club</a>-->
+<!--                        </h3>-->
+<!--                        <h3 class="color">Greener Pastures</h3>-->
+<!--                        <h3 class="price">390.000 VND</h3>-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                  <div class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item">-->
+<!--                    <div class="thumbnail">-->
+<!--                      <div class="cont-item">-->
+<!--                        <img class="inormal" src="https://ananas.vn/wp-content/uploads/Pro_AHP003_1-500x500.jpg">-->
+<!--                        <img class="ihover" src="https://ananas.vn/wp-content/uploads/Pro_AHP003_9-500x500.jpg">-->
+<!--                      </div>-->
+<!--                      <div class="button">-->
+<!--                        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" href="https://ananas.vn/product-detail/aet00002/">MUA-->
+<!--                          NGAY</a>-->
+<!--                        <a class="btn btn-prd1-heart addToWishList" href="javascript:void(0)" data-liked="false"-->
+<!--                           data-action="transferCartToWishList" data-idproduct="994533" data-isproductlistpage="1"></a>-->
+<!--                      </div>-->
+<!--                      <div class="caption">-->
+<!--                        <h3 class="name"><a href="https://ananas.vn/product-detail/aet00002/">Pigment Tee - Nice Nature Club</a>-->
+<!--                        </h3>-->
+<!--                        <h3 class="color">Greener Pastures</h3>-->
+<!--                        <h3 class="price">390.000 VND</h3>-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                  <div class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item">-->
+<!--                    <div class="thumbnail">-->
+<!--                      <div class="cont-item">-->
+<!--                        <img class="inormal" src="https://ananas.vn/wp-content/uploads/pro_AET00001_1-500x500.jpg">-->
+<!--                        <img class="ihover" src="https://ananas.vn/wp-content/uploads/pro_AET00001_2-500x500.jpg">-->
+<!--                      </div>-->
+<!--                      <div class="button">-->
+<!--                        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" href="https://ananas.vn/product-detail/aet00002/">MUA-->
+<!--                          NGAY</a>-->
+<!--                        <a class="btn btn-prd1-heart addToWishList" href="javascript:void(0)" data-liked="false"-->
+<!--                           data-action="transferCartToWishList" data-idproduct="994533" data-isproductlistpage="1"></a>-->
+<!--                      </div>-->
+<!--                      <div class="caption">-->
+<!--                        <h3 class="name"><a href="https://ananas.vn/product-detail/aet00002/">Pigment Tee - Nice Nature Club</a>-->
+<!--                        </h3>-->
+<!--                        <h3 class="color">Greener Pastures</h3>-->
+<!--                        <h3 class="price">390.000 VND</h3>-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                  <div class="col-xs-6 col-sm-6 col-md-4 col-lg-4 item">-->
+<!--                    <div class="thumbnail">-->
+<!--                      <div class="cont-item">-->
+<!--                        <img class="inormal" src="https://ananas.vn/wp-content/uploads/Pro_AET00002_1-500x500.jpg">-->
+<!--                        <img class="ihover" src="https://ananas.vn/wp-content/uploads/Pro_AET00002_2-500x500.jpg">-->
+<!--                      </div>-->
+<!--                      <div class="button">-->
+<!--                        <a class="btn btn-prd1-buynow hidden-xs hidden-sm" href="https://ananas.vn/product-detail/aet00002/">MUA-->
+<!--                          NGAY</a>-->
+<!--                        <a class="btn btn-prd1-heart-active addToWishList" href="javascript:void(0)" data-liked="false"-->
+<!--                           data-action="transferCartToWishList" data-idproduct="994533" data-isproductlistpage="1"></a>-->
+<!--                      </div>-->
+<!--                      <div class="caption">-->
+<!--                        <h3 class="name"><a href="https://ananas.vn/product-detail/aet00002/">Pigment Tee - Nice Nature Club</a>-->
+<!--                        </h3>-->
+<!--                        <h3 class="color">Greener Pastures</h3>-->
+<!--                        <h3 class="price">390.000 VND</h3>-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--      </div>-->
